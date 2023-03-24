@@ -8,18 +8,19 @@ import Pagination from "../components/Pagination/Pagination";
 
 const Users = () => {
   const [stats, setStats] = useState({
-    limit: 0,
+    limit: 20,
     page: 0,
     total: 75,
     totalPages: 10 / 10,
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 5;
 
-  console.log(currentPage);
+  const { data, isLoading, error, isFetching } = useGetAllUsersQuery({
+    page: stats.page,
+    limit: stats.limit,
+  });
 
-  const { data, isLoading, error } = useGetAllUsersQuery({});
   console.log("data", data);
+
   const [deleteUser, { isLoading: deleteIsLoading, error: deleteError }] =
     useDeleteUserMutation();
 
@@ -33,27 +34,32 @@ const Users = () => {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    setStats({
+      ...stats,
+      page,
+    });
   };
 
   useEffect(() => {
-    // setStats((prevStats) => ({
-    //   ...prevStats,
-    //   total: stats.length,
-    //   totalPages: Math.ceil(stats.length / prevStats.limit),
-    // }));
-  }, []);
+    setStats((prevStats) => ({
+      ...prevStats,
+      page: data?.page,
+      total: data?.total,
+      totalPages: Math.ceil(data?.total / data?.limit),
+    }));
+  }, [data]);
 
   return isLoading ? (
     <Loader />
   ) : (
     <>
       <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
+        currentPage={stats?.page}
+        totalPages={stats?.totalPages || 0}
         onPageChange={handlePageChange}
       />
       <div className="grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {isFetching && <DeleteLoader message="Page Fetching, please wait" />}
         {deleteIsLoading && (
           <DeleteLoader message="Deleting user, please wait" />
         )}

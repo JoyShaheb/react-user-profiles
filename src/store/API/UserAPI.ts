@@ -12,7 +12,7 @@ export const UserAPI = createApi({
   }),
   endpoints: (builder) => ({
     getAllUsers: builder.query({
-      query: () => `/user`,
+      query: ({page = 0, limit = 20}) => `/user?page=${page}&limit=${limit}`,
       providesTags: ['Users'],
     }),
     getOneUser: builder.query({
